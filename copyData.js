@@ -5,12 +5,23 @@ import { listOfBuilds } from "./listOfBuilds.js";
 
 const notFoundText = "not found";
 
+function getRandomDelay(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 (async () => {
   // Launch a new browser instance
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch({
+    headless: false, // Run with a visible UI
+    slowMo: 50, // Adds a delay between actions (in ms)
+  });
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 720 }, // Typical desktop resolution
+    deviceScaleFactor: 1, // Default scale factor
+  });
 
   // Create a new page
-  const page = await browser.newPage();
+  const page = await context.newPage();
 
   const selectors = {
     charName: ".rounded.text-green+span",
@@ -21,7 +32,6 @@ const notFoundText = "not found";
 
   const buildsData = [];
   for (const buildLink of listOfBuilds) {
-    console.log(buildLink);
     let charName = "";
     let combatPower = "";
     let firstWeapon = "";
@@ -30,6 +40,7 @@ const notFoundText = "not found";
     try {
       // Navigate to the URL
       await page.goto(buildLink);
+      await page.waitForTimeout(getRandomDelay(500, 2000));
 
       // Wait for the page to load and the necessary elements to be visible
       await page.waitForSelector(selectors.charName); // Adjust selector as needed for the name
@@ -44,7 +55,10 @@ const notFoundText = "not found";
         el.textContent.trim()
       );
 
-      await page.click(selectors.skillTabButton);
+      await page.click(selectors.skillTabButton, {
+        delay: getRandomDelay(50, 150),
+      }); // Simulate human click
+      await page.waitForTimeout(getRandomDelay(500, 2000));
       await page.waitForSelector(selectors.weaponsCombo);
       const weaponsCombo = await page.$eval(selectors.weaponsCombo, (el) =>
         el.textContent.trim()
@@ -57,9 +71,9 @@ const notFoundText = "not found";
       secondWeapon = secondWeaponRaw;
     } catch {
       charName = charName === "" ? notFoundText : charName;
-      charName = combatPower === "" ? notFoundText : combatPower;
-      charName = firstWeapon === "" ? notFoundText : firstWeapon;
-      charName = secondWeapon === "" ? notFoundText : secondWeapon;
+      combatPower = combatPower === "" ? notFoundText : combatPower;
+      firstWeapon = firstWeapon === "" ? notFoundText : firstWeapon;
+      secondWeapon = secondWeapon === "" ? notFoundText : secondWeapon;
     }
 
     // Log the extracted values
@@ -67,8 +81,8 @@ const notFoundText = "not found";
     console.log(`Combat Power: ${combatPower}`);
     console.log(`First Weapon: ${firstWeapon}`);
     console.log(`Second Weapon: ${secondWeapon}`);
+    console.log(`Build Link: ${buildLink}`);
 
-    console.log(`Name: ${charName}`);
     buildsData.push([
       charName,
       combatPower,
