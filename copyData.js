@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import { google } from "googleapis";
 import { listOfBuilds } from "./listOfBuilds.js";
 
+const sheetId = "1qEXk2CBKqAZLBTeGmLL2xhQSvcgBwy_NRKPFypYcBqo";
 const notFoundText = "not found";
 
 function getRandomDelay(min, max) {
@@ -109,7 +110,7 @@ function getRandomDelay(min, max) {
 
   async function updateGoogleSheet() {
     // Replace with your Google Sheet ID
-    const spreadsheetId = "1Sw6j_FUTgMyLh_oGHu3-Z4SwkLhl5PStB0GN72CYYSY";
+    const spreadsheetId = sheetId;
 
     try {
       // Update values in the first column of the first sheet
